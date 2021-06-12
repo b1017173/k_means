@@ -24,6 +24,7 @@ def k_means(data:np.ndarray, k:int):
     
     # 初期化処理
     _clusters:list = []
+    _euclidean_distance_sum = 0
     for representative_vector in data[tuple([random.sample(range(len(data)), k = k)])]:
         _clusters.append(Cluster(representative_vector))
     
@@ -34,8 +35,12 @@ def k_means(data:np.ndarray, k:int):
         _clusters = divideData(data, _clusters)
         for cluster in _clusters:
             cluster.recalRepresentativeVector()
+    
+    for cluster in _clusters:
+        for element in cluster.elements:
+            _euclidean_distance_sum += cluster.euclideanDistance(element)
 
-    return _clusters
+    return _clusters, _euclidean_distance_sum
     
 def divideData(data:np.ndarray, clusters:list[Cluster]):
     _clusters = clusters
@@ -65,12 +70,19 @@ def printLearnResult(_clusters:list[Cluster], _todohuken:np.ndarray, k:int):
 
 def main(csv_file_path:str, k:int):
     _data, _todohuken = readCSV(csv_file_path)
-    _clusters = k_means(_data, k)
+    _clusters = []
+    _euclidean_distance_sum = 0
+    for i in range(50):
+        _index_clusters, _index_euclidean_distance_sum = k_means(_data, k)
+        if i == 0 or _index_euclidean_distance_sum < _euclidean_distance_sum:
+            _clusters = _index_clusters
+            _euclidean_distance_sum = _index_euclidean_distance_sum
     printLearnResult(_clusters, _todohuken, k)
 
 if __name__ == '__main__':
     # _csv_file_path = sys.stdin[1]
     # _k = sys.stdin[2]
     _csv_file_path = 'data/sangyohi.csv'
-    _k = 2
+    _k = 6
+
     main(_csv_file_path, _k)
